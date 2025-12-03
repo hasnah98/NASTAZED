@@ -1,0 +1,40 @@
+name: Check Naming Convention
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate-names:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Validate file naming format
+        run: |
+          echo "Checking file names..."
+          
+          # regex pattern: NS.<number>.<filename>.<ext>
+          pattern='^NS\.[0-9]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+$'
+
+          invalid_files=""
+
+          for file in $(git ls-files); do
+            if ! [[ $file =~ $pattern ]]; then
+              invalid_files="$invalid_files\n$file"
+            fi
+          done
+
+          if [[ -n "$invalid_files" ]]; then
+            echo -e "❌ الملفات التالية مخالفة لقواعد التسمية:"
+            echo -e "$invalid_files"
+            echo ""
+            echo "⚠️ الصيغة الصحيحة: NS.<رقم_الشخص>.<اسم_الملف>.<النوع>"
+            exit 1
+          fi
+
+          echo "✔️ جميع الملفات مطابقة لقواعد التسمية!"
